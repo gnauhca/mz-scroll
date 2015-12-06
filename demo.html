@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>scroll animate</title>
+<style type="text/css">
+* {
+	margin: 0;
+	padding: 0;
+}
+.slider {
+	height: 800px;
+	border: 1px solid #ddd;
+	text-align: center;
+	position: relative;
+}
+
+.slider p {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 100px;
+	height: 100px;
+	border: 1px solid #ddd;
+	transform: translate(-50%, -50%) rotate(60deg);
+	transition: all 1s;
+	font-size: 100px;
+	color: red;
+	line-height: 100px;
+}
+.slider.actived p {
+	transform: translate(-50%, -50%);
+	color: #abcdef;
+}
+#debug {
+	position: fixed;
+	top: 100px;
+	right: 20px;
+}
+.slider:nth-child(1) {}
+</style>
+<script type="jquery.js"></script>
+</head>
+<body>
+
+<div class="container">
+	<div class="slider-wrap">
+		<div class="slider" id="1"><p>1</p><span></span></div>
+		<div class="slider" id="2"><p>2</p><span></span></div>
+		<div class="slider" id="3"><p>3</p><span></span></div>
+		<div class="slider" id="4"><p>4</p><span></span></div>
+		<div class="slider" id="5"><p>5</p><span></span></div>
+		<div class="slider" id="6"><p>6</p><span></span></div>
+		<div class="slider" id="7"><p>7</p><span></span></div>
+		<div class="slider" id="8"><p>8</p><span></span></div>
+	</div>
+	<div id="debug"></div>
+</div>
+
+<script src="jquery.js"></script>
+<script src="l-scroll.js"></script>
+<script>
+/*
+ * options 配置 如果传false则删除此元素监听任务
+ *
+ * once {boolean} 是否执行一次 default false
+ * delay {int} 元素进入区域延时
+ * topOffset {int} 元素顶部到窗口底部的距离多少算进入区域 default 0
+ * bottomOffset {int} 元素底部到窗口顶部部的距离多少算进入区域 default 0
+ * activeClass {string} 元素进入区域要添加的类
+ * scrollIn {function} 元素进入区域的回调
+ * scrollOut {function} 元素离开区域的回调
+ * scrolling 
+ * 
+ */
+$('.slider').addScroll({
+	once: false,
+	topOffset: -200,
+	bottomOffset: -300,
+
+	inScreen: 0.5,//占屏幕50%时激活
+	activeClass: 'actived',
+	scrollIn: function() {
+		$('p', this).stop().animate({'width': 200, 'height': 200, 'line-height': '200px'})
+	},
+	scrollOut: function() {
+		$('p', this).stop().animate({'width': 100, 'height': 100, 'line-height': '100px'})
+	},
+	scrolling: (function() {
+		var top = 50;
+		return function(offset) {
+			//top += offset/50;
+			//$('p', this).css('top', top + '%')
+			console.log(this.id, top)
+		}		
+	})()
+});
+
+var debug = $('#debug')[0];
+$(window).on('scroll', function() {
+	debug.innerHTML = '';
+	$('.slider').each(function() {
+		var elem = this,
+			elemHeight = elem.offsetHeight,
+			elemOfsTop = $(elem).offset().top,
+			windowScrollTop = $(window).scrollTop(),
+			windowHeight = $(window).height();
+
+		debug.innerHTML += '<br> ' + elem.id + '  头部距离窗口底部距离：' + (elemOfsTop - windowScrollTop - windowHeight) + 'px' + 
+						'<br> ' + elem.id + '  底部距离窗口顶部距离：' + (windowScrollTop - elemOfsTop - elemHeight) + 'px';		
+	});
+
+
+});
+
+
+
+</script>
+</body>
+</html>
