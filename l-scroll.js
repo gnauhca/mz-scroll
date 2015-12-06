@@ -49,9 +49,6 @@ var Scroller = function() {
 					})(task), task.options.delay);						
 				}
 				task.options.scrolling && task.options.scrolling.call(task.elem, scrollOffset);
-				if (task.options.once) {
-					scrollTasks.splice(i, 1);
-				}
 				task.actived = actived;
 			} else if (sizeInfo.scrollOut){
 				actived = false;
@@ -59,6 +56,10 @@ var Scroller = function() {
 					task.options.scrollOut && task.options.scrollOut.call(task.elem);
 					$(task.elem).removeClass(task.options.activeClass);
 					task.actived = actived;
+					
+					if (task.options.once) {
+						scrollTasks.splice(i, 1);
+					}
 				}
 			}
 			//debug.innerHTML += '<br> ' + task.elem.id + ': ' + task.actived + '<br />';

@@ -86,14 +86,11 @@ $('.slider').addScroll({
 	scrollOut: function() {
 		$('p', this).stop().animate({'width': 100, 'height': 100, 'line-height': '100px'})
 	},
-	scrolling: (function() {
-		var top = 50;
-		return function(offset) {
+	scrolling: function(offset) {
 			//top += offset/50;
 			//$('p', this).css('top', top + '%')
-			console.log(this.id, top)
-		}		
-	})()
+			console.log(this.id, offset)
+	}	
 });
 
 var debug = $('#debug')[0];
