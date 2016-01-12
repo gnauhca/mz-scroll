@@ -15,7 +15,6 @@ options {obj} 配置 如果传false则删除此元素监听任务
 
  * 具体配置选项：
  * once {boolean} 是否只执行一次 default false
- * delay {int} 元素进入区域延时
  * topOffset {int} 定义元素顶部到窗口底部的距离多少算进入区域 default 0
  * bottomOffset {int} 定义元素底部到窗口顶部部的距离多少算进入区域 default 0
  * activeClass {string} 元素进入区域要添加的类名
