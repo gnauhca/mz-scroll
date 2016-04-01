@@ -1,3 +1,5 @@
+;(function() {
+
 var Scroller = function() {
 	var scrollTasks = [],
 		defaults = {
@@ -10,7 +12,8 @@ var Scroller = function() {
 			scrollIn: null,
 			scrollOut: null,
 			scrolling: null
-		};
+		},
+		that = this;
 
 	//初始化，监听window scroll事件
 	function init() {
@@ -31,8 +34,8 @@ var Scroller = function() {
 			sizeInfo,
 			actived;
 
-		//debug.innerHTML = '';
-		for (var i = 0, l=scrollTasks.length; i < l; i++) {
+		//console.log(scrollTasks.length);
+		for (var i = scrollTasks.length-1; i >= 0; i--) {
 			task = scrollTasks[i];
 			sizeInfo = getSizeInfo(task.elem, task.options.topOffset, task.options.bottomOffset);
 
@@ -40,73 +43,86 @@ var Scroller = function() {
 			if (sizeInfo.scrollIn) {
 				actived = true;
 				if (task.actived !== actived) {
-					setTimeout((function(task) {
-						return function() {
-							if (!task.actived) return;
-							$(task.elem).addClass(task.options.activeClass)
-							task.options.scrollIn && task.options.scrollIn.call(task.elem);
-						}
-					})(task), task.options.delay);						
+					$(task.elem).addClass(task.options.activeClass)
+					task.options.scrollIn && task.options.scrollIn.call(task.elem);
+					if (task.options.once) {
+						that.removeTask(task.elem, task.id);
+					}				
 				}
 				task.options.scrolling && task.options.scrolling.call(task.elem, scrollOffset);
 				task.actived = actived;
+
 			} else if (sizeInfo.scrollOut){
 				actived = false;
 				if (task.actived !== actived) {
 					task.options.scrollOut && task.options.scrollOut.call(task.elem);
 					$(task.elem).removeClass(task.options.activeClass);
 					task.actived = actived;
-					
-					if (task.options.once) {
-						scrollTasks.splice(i, 1);
-					}
 				}
 			}
-			//debug.innerHTML += '<br> ' + task.elem.id + ': ' + task.actived + '<br />';
+			if (task.actived) {
+				task.options.scrolling && task.options.scrolling.call(task.elem, scrollOffset);
+			}
 		}
 	}
 
 
 	function getSizeInfo(elem, topOffset, bottomOffset) {
-		var elemHeight = elem.offsetHeight,
+		var preSize = $(elem).data('mzscrollpresize') || 1, // 这次滚动发生前元素处于屏幕上方还是下方，默认下方
+			elemHeight = elem.offsetHeight,
 			elemOfsTop = $(elem).offset().top,
 			windowScrollTop = $(window).scrollTop(),
 			windowHeight = $(window).height(),
 			sizeInfo = {/*scrollOut, scrollIn*/};	
 
+		//console.log(elemOfsTop, windowScrollTop + windowHeight, preSize);
 		//判断scrollIn时机，注意scrollIn，scrollOut时机并不是互斥的
-		if (elemOfsTop < windowScrollTop + windowHeight + topOffset &&
-			elemOfsTop + elemHeight > windowScrollTop - bottomOffset) {
+		if ((elemOfsTop < windowScrollTop + windowHeight + topOffset && preSize == 1) ||
+			(elemOfsTop + elemHeight > windowScrollTop - bottomOffset) && preSize == -1) {
 			sizeInfo.scrollIn = true;
-		} else {
+		}/* else if (elemOfsTop > windowScrollTop && 
+			elemOfsTop + elemHeight < windowScrollTop + windowHeight){
+			// 整个元素进入窗口了 scrollIn
+			sizeInfo.scrollIn = true;
+		} */else {
 			sizeInfo.scrollIn = false;
 		}
 
+
 		//判断scrollOut时机
-		if (elemOfsTop > windowScrollTop + windowHeight + (bottomOffset < 0 ? 0: bottomOffset) ||
-			elemOfsTop + elemHeight < windowScrollTop + (topOffset > 0 ? 0 : topOffset)) {
-			sizeInfo.scrollOut = true;
+		if (elemOfsTop > windowScrollTop + windowHeight + (bottomOffset < 0 ? 0: bottomOffset)) {
+			preSize = 1;
+			$(elem).data('mzscrollpresize', 1);
+		} else if (elemOfsTop + elemHeight < windowScrollTop + (topOffset > 0 ? 0 : topOffset)) {
+			$(elem).data('mzscrollpresize', -1);
+			preSize = -1;
 		} else {
-			sizeInfo.scrollOut = false;
+			preSize = 0;
 		}
+		sizeInfo.scrollOut = !!preSize;
+		
 		return sizeInfo;
 	}
 
 	this.addTask = function(elem, taskOptions) {
-		var taskOptions = $.extend(true, defaults, taskOptions),
+		var taskOptions = $.extend({}, defaults, taskOptions),
 			elem = elem;
 
 		scrollTasks.push({
+			'id': (new Date).getTime() + Math.random()*10000000,
 			'elem': elem,
 			'actived': false,
 			'options': taskOptions
 		});
+		if (typeof taskOptions.setUp === 'function') 
+			taskOptions.setUp.call(elem);
 		fireTasks(0);
 	}
 
-	this.removeTask = function(elem) {
+	this.removeTask = function(elem, id) {
+
 		for (var i = scrollTasks.length - 1; i >= 0; i--) {
-			if (scrollTasks[i].elem === elem) {
+			if (scrollTasks[i].elem === elem && (!id || scrollTasks[i].id === id)) {
 				scrollTasks.splice(i, 1);
 			}
 		};
@@ -118,14 +134,13 @@ var Scroller = function() {
  * options 配置 如果传false则删除此元素监听任务
  *
  * once {boolean} 是否执行一次 default false
- * delay {int} 元素进入区域延时
  * topOffset {int} 元素顶部到窗口底部的距离多少算进入区域 default 0
  * bottomOffset {int} 元素底部到窗口顶部部的距离多少算进入区域 default 0
+ * setUp {function} 如需要做一些准备工作可以写在这里
  * activeClass {string} 元素进入区域要添加的类
  * scrollIn {function} 元素进入区域的回调
  * scrollOut {function} 元素离开区域的回调
- * scrolling 
- * 
+ * scrolling {function(scrolloffset)} 元素处于激活状态时处理滚动的函数
  */
 $.fn.addScroll = (function() {
 	var scroller = new Scroller();
@@ -141,4 +156,6 @@ $.fn.addScroll = (function() {
 		});
 		return this;
 	}
-})()
+})();
+
+})();
