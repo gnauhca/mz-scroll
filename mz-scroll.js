@@ -55,9 +55,9 @@ var Scroller = function() {
 			} else if (sizeInfo.scrollOut){
 				actived = false;
 				if (task.actived !== actived) {
+					task.actived = actived;
 					task.options.scrollOut && task.options.scrollOut.call(task.elem);
 					$(task.elem).removeClass(task.options.activeClass);
-					task.actived = actived;
 				}
 			}
 			if (task.actived) {
