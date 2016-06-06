@@ -16,7 +16,7 @@ options {obj} 配置 如果传false则删除此元素监听任务
  * 具体配置选项：
  *
  * once {boolean} 是否执行一次 default false
- * sensitive 当 once 默认为 false 元素完全离开屏幕才触发 scrollOut，设置为 true 时元素只要离开激活区域就触发 scrollOut 
+ * sensitive 默认为 false 既元素完全离开屏幕才触发 scrollOut，设置为 true 时元素只要离开激活区域就触发 scrollOut 
  * topOffset {int} 元素顶部到窗口底部的距离多少算进入区域 default 0
  * bottomOffset {int} 元素底部到窗口顶部部的距离多少算进入区域 default 0
  * setUp {function} 如需要做一些准备工作可以写在这里
