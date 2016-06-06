@@ -4,14 +4,13 @@ var Scroller = function() {
 	var scrollTasks = [],
 		defaults = {
 			once: true,
-			delay: 0,
-			inScreen: 0.5,
+			sensitive: false,
 			topOffset: 0,
 			bottomOffset: 0,
 			activeClass: '',
 			scrollIn: null,
 			scrollOut: null,
-			scrolling: null
+			scrolling: null,
 		},
 		that = this;
 
@@ -37,7 +36,7 @@ var Scroller = function() {
 		//console.log(scrollTasks.length);
 		for (var i = scrollTasks.length-1; i >= 0; i--) {
 			task = scrollTasks[i];
-			sizeInfo = getSizeInfo(task.elem, task.options.topOffset, task.options.bottomOffset);
+			sizeInfo = getSizeInfo(task.elem, task.options.topOffset, task.options.bottomOffset, task.options.sensitive);
 
 
 			if (sizeInfo.scrollIn) {
@@ -67,7 +66,7 @@ var Scroller = function() {
 	}
 
 
-	function getSizeInfo(elem, topOffset, bottomOffset) {
+	function getSizeInfo(elem, topOffset, bottomOffset, sensitive) {
 		var preSize = $(elem).data('mzscrollpresize') || 1, // 这次滚动发生前元素处于屏幕上方还是下方，默认下方
 			elemHeight = elem.offsetHeight,
 			elemOfsTop = $(elem).offset().top,
@@ -80,25 +79,25 @@ var Scroller = function() {
 		if ((elemOfsTop < windowScrollTop + windowHeight + topOffset && preSize == 1) ||
 			(elemOfsTop + elemHeight > windowScrollTop - bottomOffset) && preSize == -1) {
 			sizeInfo.scrollIn = true;
-		}/* else if (elemOfsTop > windowScrollTop && 
-			elemOfsTop + elemHeight < windowScrollTop + windowHeight){
-			// 整个元素进入窗口了 scrollIn
-			sizeInfo.scrollIn = true;
-		} */else {
+			sizeInfo.scrollOut = false;
+		} else {
 			sizeInfo.scrollIn = false;
+			sizeInfo.scrollOut = true;	
 		}
 
 
 		//判断scrollOut时机
-		if (elemOfsTop > windowScrollTop + windowHeight + (bottomOffset < 0 ? 0: bottomOffset)) {
+		if (elemOfsTop > windowScrollTop + windowHeight + (bottomOffset < 0 && !sensitive ? 0: bottomOffset)) {
 			preSize = 1;
 			$(elem).data('mzscrollpresize', 1);
-		} else if (elemOfsTop + elemHeight < windowScrollTop + (topOffset > 0 ? 0 : topOffset)) {
+		} else if (elemOfsTop + elemHeight < windowScrollTop - (topOffset < 0 && !sensitive ? 0 : topOffset)) {
 			$(elem).data('mzscrollpresize', -1);
 			preSize = -1;
 		} else {
 			preSize = 0;
 		}
+
+		if (!sensitive)
 		sizeInfo.scrollOut = !!preSize;
 		
 		return sizeInfo;
@@ -134,6 +133,7 @@ var Scroller = function() {
  * options 配置 如果传false则删除此元素监听任务
  *
  * once {boolean} 是否执行一次 default false
+ * sensitive 当 once 默认为 false 元素完全离开屏幕才触发 scrollOut，设置为 true 时元素只要离开激活区域就触发 scrollOut 
  * topOffset {int} 元素顶部到窗口底部的距离多少算进入区域 default 0
  * bottomOffset {int} 元素底部到窗口顶部部的距离多少算进入区域 default 0
  * setUp {function} 如需要做一些准备工作可以写在这里

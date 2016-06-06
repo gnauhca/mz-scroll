@@ -14,7 +14,12 @@
 	text-align: center;
 	position: relative;
 }
-
+#i4 {
+	height: 50px;
+}
+#i4.actived {
+	background: red;
+}
 .slider p {
 	position: absolute;
 	top: 50%;
@@ -47,7 +52,7 @@
 		<div class="slider" id="1"><p>1</p><span></span></div>
 		<div class="slider" id="2"><p>2</p><span></span></div>
 		<div class="slider" id="3"><p>3</p><span></span></div>
-		<div class="slider" id="4"><p>4</p><span></span></div>
+		<div class="slider" id="i4"><p>4</p><span></span></div>
 		<div class="slider" id="5"><p>5</p><span></span></div>
 		<div class="slider" id="6"><p>6</p><span></span></div>
 		<div class="slider" id="7"><p>7</p><span></span></div>
@@ -91,6 +96,17 @@ $('.slider').addScroll({
 			console.log(this.id, offset)
 	}	
 });
+
+
+var winH = $(window).height();
+$('#i4').addScroll(false).addScroll({
+	once: false,
+	topOffset: -(winH/2-50),
+	bottomOffset: -(winH/2-50),
+	activeClass: 'actived',
+	sensitive: true
+});
+
 
 
 var debug = $('#debug')[0];
