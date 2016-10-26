@@ -1,3 +1,4 @@
+/* mz-scroll 1.0.4 */
 ;(function() {
 
 var Scroller = function() {
@@ -71,7 +72,7 @@ var Scroller = function() {
 			elemHeight = elem.offsetHeight,
 			elemOfsTop = $(elem).offset().top,
 			windowScrollTop = $(window).scrollTop(),
-			windowHeight = $(window).height(),
+			windowHeight = window.innerHeight,
 			sizeInfo = {/*scrollOut, scrollIn*/};	
 
 		//console.log(elemOfsTop, windowScrollTop + windowHeight, preSize);
